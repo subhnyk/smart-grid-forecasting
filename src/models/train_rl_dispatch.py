@@ -7,7 +7,6 @@ from gymnasium import spaces
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv
-from stable_baselines3.common.callbacks import CheckpointCallback
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -88,7 +87,6 @@ class BatteryDispatchEnv(gym.Env):
         row = self.df.iloc[self.current_step]
         price = float(row["Locational Marginal Price"])  # $/MWh
 
-        energy_delta = 0.0
         actual_power_mw = 0.0
         penalty = 0.0
 
@@ -126,7 +124,7 @@ class BatteryDispatchEnv(gym.Env):
                 penalty += 10.0 * (energy_from_battery - max_drawable_mwh)
             else:
                 actual_mwh_drawn = energy_from_battery
-                actual_power_mw = requested_power * self.eta_discharge
+                actual_power_mw = requested_power
 
             self.soc -= actual_mwh_drawn / self.capacity_mwh
             # Revenue earned selling power to grid

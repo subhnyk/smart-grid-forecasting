@@ -27,3 +27,6 @@ pytest>=7.4.0
 httpx>=0.24.0
 
 # https://www.eia.gov/opendata/verify.php?activation=bf64b17c1d7e2f3f1a72d402cc2ea09e
+
+# python -m uvicorn src.serving.api:app --reload --port 8000
+# streamlit run src/serving/dashboard.py

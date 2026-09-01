@@ -1,6 +1,5 @@
 import os
 import requests
-import numpy as np
 import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
@@ -134,12 +133,17 @@ if df_grid is not None:
                 # Contextual Historical Plot
                 st.subheader("📊 Past 24 Hours Context & Market Dynamics")
                 fig_hist = make_subplots(specs=[[{"secondary_y": True}]])
+
+                # Safely get columns for plotting
+                hist_net_load = past_24h_df["net_load"] if "net_load" in past_24h_df.columns else [0]*24
+                hist_lmp = past_24h_df["Locational Marginal Price"] if "Locational Marginal Price" in past_24h_df.columns else [0]*24
+
                 fig_hist.add_trace(
-                    go.Bar(x=past_24h_df["timestamp"], y=past_24h_df["net_load"], name="Historical Net Load (MW)", marker_color="#2E86C1", opacity=0.7),
+                    go.Bar(x=past_24h_df["timestamp"], y=hist_net_load, name="Historical Net Load (MW)", marker_color="#2E86C1", opacity=0.7),
                     secondary_y=False
                 )
                 fig_hist.add_trace(
-                    go.Scatter(x=past_24h_df["timestamp"], y=past_24h_df["Locational Marginal Price"], name="LMP ($/MWh)", line=dict(color="#E74C3C", width=2.5)),
+                    go.Scatter(x=past_24h_df["timestamp"], y=hist_lmp, name="LMP ($/MWh)", line=dict(color="#E74C3C", width=2.5)),
                     secondary_y=True
                 )
                 fig_hist.update_layout(template="plotly_dark", height=400, hovermode="x unified")

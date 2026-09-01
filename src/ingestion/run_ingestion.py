@@ -1,8 +1,8 @@
 import os
 import logging
 import pandas as pd
-from eia_client import EIAv2Client
-from weather_client import OpenMeteoClient
+from src.ingestion.eia_client import EIAv2Client
+from src.ingestion.weather_client import OpenMeteoClient
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 

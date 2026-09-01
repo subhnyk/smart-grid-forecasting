@@ -46,7 +46,7 @@ class GridFeatureEngineer:
         df = df.interpolate(method="time", limit=3)
         
         # Forward/backward fill for remaining boundary gaps
-        df.ffill().bfill()
+        df = df.ffill().bfill()
         df.reset_index(inplace=True)
 
         # Handle negative or zero anomalies in solar/demand metrics

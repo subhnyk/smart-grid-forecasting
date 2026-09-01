@@ -72,6 +72,7 @@ class OpenMeteoClient:
     def _generate_fallback_weather(self, start_date: str, end_date: str) -> pd.DataFrame:
         """Generates synthetic weather telemetry if API fails."""
         logging.info("Generating synthetic fallback Open-Meteo weather data...")
+        np.random.seed(42)
         dates = pd.date_range(start=start_date, end=f"{end_date} 23:00:00", freq="h", tz="UTC")
         hours = dates.hour
         days = dates.dayofyear

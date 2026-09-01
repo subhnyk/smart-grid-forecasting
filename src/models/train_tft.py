@@ -8,7 +8,7 @@ from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.loggers import TensorBoardLogger
 
 from pytorch_forecasting import TimeSeriesDataSet, TemporalFusionTransformer, Baseline
-from pytorch_forecasting.metrics import QuantileLoss, RMSE, MAE
+from pytorch_forecasting.metrics import QuantileLoss, MAE
 from pytorch_forecasting.data import GroupNormalizer
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -22,8 +22,8 @@ TFT_CHECKPOINT_PATH = os.path.join(MODEL_SAVE_DIR, "tft_model.ckpt")
 
 class TFTGridForecaster:
     """
-    Temporal Fusion Transformer pipeline for joint 24-hour ahead quantile 
-    forecasting of Net Load and Locational Marginal Price (LMP).
+    Temporal Fusion Transformer pipeline for 24-hour ahead quantile
+    forecasting of Net Load.
     """
 
     def __init__(self, data_path: str = INPUT_PATH, max_encoder_length: int = 24, max_prediction_length: int = 24):
@@ -45,17 +45,10 @@ class TFTGridForecaster:
         # Artificial static group identifier (single grid region, e.g., ERCOT)
         df["region"] = "ERCOT_GRID"
         
-        # Enforce float32 data types across features
-        float_cols = [
-            "net_load", "Locational Marginal Price", "temperature",
-            "global_horizontal_irradiance", "wind_speed_100m",
-            "hour_sin", "hour_cos", "day_sin", "day_cos",
-            "day_of_year_sin", "day_of_year_cos",
-            "net_load_lag_24h", "locational_marginal_price_lag_24h",
-            "net_load_rolling_mean_24h", "net_load_rolling_std_24h"
-        ]
-        for col in float_cols:
-            if col in df.columns:
+        # Enforce float32 data types across numeric features for PyTorch efficiency
+        numeric_cols = df.select_dtypes(include=[np.number]).columns
+        for col in numeric_cols:
+            if col != "time_idx":
                 df[col] = df[col].astype(np.float32)
 
         # Train/Validation Cutoff (Time-based split: 85% train, 15% validation)
@@ -97,11 +90,11 @@ class TFTGridForecaster:
             stop_randomization=True
         )
 
-        return training_dataset, validation_dataset, df
+        return training_dataset, validation_dataset
 
     def train(self, max_epochs: int = 15, batch_size: int = 64):
         """Builds DataLoaders, constructs TFT architecture, and runs PyTorch Lightning trainer."""
-        train_ds, val_ds, raw_df = self.load_and_prepare_dataset()
+        train_ds, val_ds = self.load_and_prepare_dataset()
 
         train_dataloader = train_ds.to_dataloader(train=True, batch_size=batch_size, num_workers=0)
         val_dataloader = val_ds.to_dataloader(train=False, batch_size=batch_size * 2, num_workers=0)
